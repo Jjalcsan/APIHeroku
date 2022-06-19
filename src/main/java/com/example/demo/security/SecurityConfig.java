@@ -14,12 +14,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.UserRepo;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired private UsuarioRepository userRepo;
+    @Autowired private UserRepo userRepo;
     @Autowired private JWTFilter filter;
     @Autowired private MyUserDetailsService uds;
 
@@ -30,16 +31,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and()
                 .authorizeHttpRequests()
+                .antMatchers("/mail/**").permitAll()
+                .antMatchers("/nick/**").permitAll()
                 .antMatchers("/auth/**").permitAll()
-                .antMatchers("/login").permitAll()
-                .antMatchers("/register").permitAll()
-                .antMatchers("/albumes/**").hasRole("USER")
-                .antMatchers("/fotos/**").hasRole("USER")
-                .antMatchers("/grupos/**").hasRole("USER")
-                .antMatchers("/posts/**").hasRole("USER")
+                .antMatchers("/user/**").hasRole("USER")
+                .antMatchers("/users/**").hasRole("USER")
                 .antMatchers("/usuarios/**").hasRole("USER")
-                .antMatchers("/email").hasRole("USER")
-                .antMatchers("/nick").hasRole("USER")
+                .antMatchers("/albumes/**").hasRole("USER")
+                .antMatchers("/clanes/**").hasRole("USER")
+                .antMatchers("/torneos/**").hasRole("USER")
+                .antMatchers("/posts/**").hasRole("USER")
                 .and()
                 .userDetailsService(uds)
                 .exceptionHandling()

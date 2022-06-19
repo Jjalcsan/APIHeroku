@@ -12,15 +12,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.exception.ApiError;
 import com.example.demo.model.Album;
 import com.example.demo.model.Foto;
-import com.example.demo.model.Usuario;
+import com.example.demo.model.User;
 import com.example.demo.services.AlbumService;
-import com.example.demo.services.UsuarioService;
+import com.example.demo.services.UserService;
 import com.example.demo.exception.UsuarioNotFoundException;
 import com.example.demo.exception.NoContentException;
 import com.example.demo.exception.AlbumNotFoundException;
@@ -33,7 +32,7 @@ public class AlbumesController {
 	private AlbumService serviceAlb;
 	
 	@Autowired
-	private UsuarioService serviceUsu;
+	private UserService serviceUsu;
 	
 	@GetMapping("/albumes")
 	public List<Album> findAll(){
@@ -59,16 +58,16 @@ public class AlbumesController {
 	}
 	
 	@PostMapping("/usuarios/{idUsu}/albumes")
-	public Album newAlbum(@PathVariable String idUsu, @RequestParam String nombre) {
-		Usuario usuBBDD = serviceUsu.findById(idUsu);
+	public Album newAlbum(@PathVariable Long idUsu, @RequestBody Album album) {
+		User usuBBDD = serviceUsu.findByIdUser(idUsu);
 		
 		if(usuBBDD==null) {
 			throw new UsuarioNotFoundException(idUsu);
 		}
 		
-		Album album = new Album(nombre);
-		usuBBDD.getAlbumes().add(album);
-		serviceUsu.save(usuBBDD);
+		Album albumAux = new Album(album.getNombre(), usuBBDD);
+		usuBBDD.getAlbumes().add(albumAux);
+		serviceUsu.saveUser(usuBBDD);
 		
 		return album;
 	}
@@ -88,8 +87,8 @@ public class AlbumesController {
 	}
 	
 	@DeleteMapping("/usuarios/{idUsu}/albumes/{idAlb}")
-	public void deleteAlbum(@PathVariable int idAlb, @PathVariable String idUsu) {
-		Usuario usuBBDD = serviceUsu.findById(idUsu);
+	public void deleteAlbum(@PathVariable int idAlb, @PathVariable Long idUsu) {
+		User usuBBDD = serviceUsu.findByIdUser(idUsu);
 		
 		if(usuBBDD==null) {
 			throw new UsuarioNotFoundException(idUsu);
@@ -102,7 +101,7 @@ public class AlbumesController {
 		}
 		
 		usuBBDD.getAlbumes().remove(albBBDD);
-		serviceUsu.save(usuBBDD);
+		serviceUsu.saveUser(usuBBDD);
 		serviceAlb.deleteAlb(albBBDD);
 		
 		throw new NoContentException();
@@ -114,6 +113,10 @@ public class AlbumesController {
 		
 		if(albBBDD==null) {
 			throw new AlbumNotFoundException(idAlb);
+		}
+		
+		if(albBBDD.getFotos().size()==0) {
+			throw new NoContentException();
 		}
 		
 		return albBBDD.getFotos();
@@ -137,16 +140,16 @@ public class AlbumesController {
 	}
 	
 	@PostMapping("/albumes/{idAlb}/fotos")
-	public Foto newFoto(@PathVariable int idAlb, @RequestParam String titulo, @RequestParam String ruta) {
+	public Foto newFoto(@PathVariable int idAlb, @RequestBody Foto foto) {
 		Album albBBDD = serviceAlb.findByIdAlb(idAlb);
 		
 		if(albBBDD==null) {
 			throw new AlbumNotFoundException(idAlb);
 		}
 		
-		Foto foto = new Foto(titulo, ruta);
-		serviceAlb.saveFot(foto);
-		albBBDD.getFotos().add(foto);
+		Foto fotoAux = new Foto(foto.getTitulo(), albBBDD, foto.getRuta());
+		serviceAlb.saveFot(fotoAux);
+		albBBDD.getFotos().add(fotoAux);
 		serviceAlb.saveAlb(albBBDD);
 		
 		return foto;

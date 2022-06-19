@@ -35,5 +35,4 @@ public class JWTUtil {
         return jwt.getClaim("email").asString();
     }
 
-
 }

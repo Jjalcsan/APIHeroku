@@ -14,19 +14,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.exception.ApiError;
-import com.example.demo.exception.GrupoNotFoundException;
 import com.example.demo.exception.NoContentException;
 import com.example.demo.exception.PostNotFoundException;
 import com.example.demo.exception.UsuarioNotFoundException;
 import com.example.demo.model.Post;
-import com.example.demo.model.Usuario;
+import com.example.demo.model.User;
 import com.example.demo.services.PostService;
-import com.example.demo.services.UsuarioService;
+import com.example.demo.services.UserService;
 
 @RestController
 public class PostsController {
 	
-	@Autowired private UsuarioService serviceUsu;
+	@Autowired private UserService serviceUsu;
 	
 	@Autowired private PostService servicePost;
 	
@@ -41,9 +40,9 @@ public class PostsController {
 		return findall;
 	}
 	
-	@GetMapping("usuarios/{idUsu}/posts")
-	public List<Post> comentariosUsuario(@PathVariable String idUsu){
-		Usuario usuBBDD = serviceUsu.findById(idUsu);
+	@GetMapping("/usuarios/{idUsu}/posts")
+	public List<Post> postsUsuario(@PathVariable Long idUsu){
+		User usuBBDD = serviceUsu.findByIdUser(idUsu);
 		
 		if(usuBBDD==null) {
 			throw new UsuarioNotFoundException(idUsu);
@@ -52,25 +51,25 @@ public class PostsController {
 		return usuBBDD.getPosts();
 	}
 	
-	@PostMapping("usuarios/{idUsu}/posts")
-	public Post newPost(@PathVariable String idUsu, @RequestBody Post post) {
-		Usuario usuBBDD = serviceUsu.findById(idUsu);
+	@PostMapping("/usuarios/{idUsu}/posts")
+	public Post newPost(@PathVariable Long idUsu, @RequestBody Post post) {
+		User usuBBDD = serviceUsu.findByIdUser(idUsu);
 		
 		if(usuBBDD==null) {
 			throw new UsuarioNotFoundException(idUsu);
 		}
 		
-		Post postBBDD = new Post(post.getContenido());
+		Post postBBDD = new Post(post.getContenido(), usuBBDD);
 		servicePost.save(postBBDD);
 		usuBBDD.getPosts().add(postBBDD);
-		serviceUsu.save(usuBBDD);
+		serviceUsu.saveUser(usuBBDD);
 		
 		return post;
 	}
 	
-	@DeleteMapping("usuarios/{idUsu}/posts/{idPost}")
-	public void deletePost(@PathVariable String idUsu, @PathVariable int idPost) {
-		Usuario usuBBDD = serviceUsu.findById(idUsu);
+	@DeleteMapping("/usuarios/{idUsu}/posts/{idPost}")
+	public void deletePost(@PathVariable Long idUsu, @PathVariable int idPost) {
+		User usuBBDD = serviceUsu.findByIdUser(idUsu);
 		
 		if(usuBBDD==null) {
 			throw new UsuarioNotFoundException(idUsu);
@@ -83,7 +82,7 @@ public class PostsController {
 		}
 		
 		usuBBDD.getPosts().remove(postBBDD);
-		serviceUsu.save(usuBBDD);
+		serviceUsu.saveUser(usuBBDD);
 		servicePost.delete(postBBDD);
 		
 		throw new NoContentException();
@@ -95,9 +94,9 @@ public class PostsController {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
 	}
 	
-	@ExceptionHandler(GrupoNotFoundException.class)
-	public ResponseEntity<ApiError> FotoNotFoundException(GrupoNotFoundException grupoException) {
-		ApiError apiError = new ApiError(grupoException.getMessage());
+	@ExceptionHandler(PostNotFoundException.class)
+	public ResponseEntity<ApiError> PostNotFoundException(PostNotFoundException postException) {
+		ApiError apiError = new ApiError(postException.getMessage());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
 	}
 	
