@@ -6,8 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class SocialNetApiApplicationTests {
 
+	/*
 	@Test
 	void contextLoads() {
 	}
-
+	*/
 }

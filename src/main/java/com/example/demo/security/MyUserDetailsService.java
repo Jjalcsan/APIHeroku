@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepo;
-/*
+
 @Component
 public class MyUserDetailsService implements UserDetailsService {
 
@@ -31,4 +31,4 @@ public class MyUserDetailsService implements UserDetailsService {
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }
-}*/
+}
